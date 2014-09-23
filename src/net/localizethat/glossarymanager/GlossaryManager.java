@@ -28,9 +28,9 @@ public class GlossaryManager {
      * versions, "b2" for beta versions, or "r5" for release maintenance version
      * 
      * For instance, when comparing "2.0.b4" to "12.0.r3", the comparison would be:
-     * - Major: 2 < 12
+     * - Major: 2 &lt; 12
      * - Minor: 0 == 0
-     * - Bugrelease: "b4" < "r3"
+     * - Bugrelease: "b4" &lt; "r3"
      */
     public static final String version = "0.0.a2";
 
