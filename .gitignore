@@ -1,6 +1,6 @@
-/db/
-/glossarymanager.properties
-/savedCis.xml
-/nbproject/private/
 /build/
+/db/
 /dist/
+/glossarymanager.properties
+/nbproject/private/
+/savedCis.xml
