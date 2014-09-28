@@ -144,6 +144,15 @@ public class L10nTableModel extends AbstractTableModel {
         fireTableRowsInserted(l10nList.size() - 2, l10nList.size() - 1);
     }
 
+    public L10n getElement(int index) {
+        return l10nList.get(index);
+    }
+
+    public int getIndexOf(L10n l) {
+        int index = l10nList.indexOf(l);
+        return index;
+    }
+
     public void removeElement(L10n l) {
         int index = l10nList.indexOf(l);
         if (index != -1) {
