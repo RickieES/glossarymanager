@@ -9,7 +9,7 @@ package net.localizethat.glossarymanager.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import net.localizethat.glossarymanager.GlossaryManager;
-import net.localizethat.glossarymanager.gui.L10nGuiManager;
+import net.localizethat.glossarymanager.gui.L10nGUIManager;
 
 /**
  * Opens a tab with the locale manager in the main window
@@ -19,7 +19,7 @@ public class LocaleManagerAction extends AbstractAction {
     private static final String TITLE = "Locale Manager";
     private static final String DESCRIPTION = "Opens " + TITLE;
     private static final int MNEMONIC = java.awt.event.KeyEvent.VK_L;
-    private L10nGuiManager l10nGuiMgr;
+    private L10nGUIManager l10nGuiMgr;
 
     /**
      * Action representing the launching of LocaleManager panel as a tab in main window
@@ -35,7 +35,7 @@ public class LocaleManagerAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         GlossaryManager.mainWindow.getStatusBar().setInfoText("Creating window, please wait...");
         if (l10nGuiMgr == null) {
-            l10nGuiMgr = new L10nGuiManager();
+            l10nGuiMgr = new L10nGUIManager();
         }
         GlossaryManager.mainWindow.addTab(l10nGuiMgr, TITLE);
     }
