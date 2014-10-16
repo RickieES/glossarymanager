@@ -6,6 +6,7 @@
     <class>net.localizethat.glossarymanager.model.GlsEntry</class>
     <class>net.localizethat.glossarymanager.model.L10n</class>
     <class>net.localizethat.glossarymanager.model.GlsTranslation</class>
+    <class>net.localizethat.glossarymanager.model.ConfigValue</class>
     <properties>
       <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
       <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/lt-data"/>
@@ -15,7 +16,7 @@
       <property name="eclipselink.logging.logger" value="JavaLogger"/>
       <property name="eclipselink.logging.level" value="FINEST"/>
       <property name="eclipselink.logging.parameters" value="true"/>
-      <property name="eclipselink.logging.level.sql" value="FINE" />
+      <property name="eclipselink.logging.level.sql" value="FINE"/>
     </properties>
   </persistence-unit>
 </persistence>
