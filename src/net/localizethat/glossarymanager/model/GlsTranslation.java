@@ -46,7 +46,7 @@ public class GlsTranslation implements Serializable {
     private static final int GLSTVALUE_LENGTH = 64;
     private static final int GLSTCOMMENT_LENGTH = 32700;
     @TableGenerator(name="GLSTRANSLATION", schema="APP", table="COUNTERS",
-            pkColumnName="ENTITY", valueColumnName="VALUE", allocationSize = 5)
+            pkColumnName="ENTITY", valueColumnName="COUNTERVALUE", allocationSize = 5)
     @Id
     @GeneratedValue(strategy= GenerationType.TABLE, generator="GLSTRANSLATION")
     @Basic(optional = false)

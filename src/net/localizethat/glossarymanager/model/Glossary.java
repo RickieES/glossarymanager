@@ -52,7 +52,7 @@ public class Glossary implements Serializable {
     private static final int GLOSNAME_LENGTH = 64;
     private static final int GLOSVERSION_LENGTH = 10;
     @TableGenerator(name="GLOSSARY", schema="APP", table="COUNTERS",
-            pkColumnName="ENTITY", valueColumnName="VALUE", allocationSize = 5)
+            pkColumnName="ENTITY", valueColumnName="COUNTERVALUE", allocationSize = 5)
     @Id
     @GeneratedValue(strategy= GenerationType.TABLE, generator="GLOSSARY")
     @Basic(optional = false)

@@ -56,7 +56,7 @@ public class GlsEntry implements Serializable {
     private static final int GLSETERM_LENGTH = 64;
     private static final int GLSECOMMENT_LENGTH = 32700;
     @TableGenerator(name="GLSENTRY", schema="APP", table="COUNTERS",
-            pkColumnName="ENTITY", valueColumnName="VALUE", allocationSize = 5)
+            pkColumnName="ENTITY", valueColumnName="COUNTERVALUE", allocationSize = 5)
     @Id
     @GeneratedValue(strategy= GenerationType.TABLE, generator="GLSENTRY")
     @Basic(optional = false)

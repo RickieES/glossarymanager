@@ -36,6 +36,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @UniqueConstraint(columnNames = {"L10NNAME"})})
 @XmlRootElement
 @NamedQueries({
+    @NamedQuery(name = "L10n.countAll", query = "SELECT COUNT(l) FROM L10n l"),
+    @NamedQuery(name = "L10n.countById", query = "SELECT COUNT(l) FROM L10n l WHERE l.id = :id"),
+    @NamedQuery(name = "L10n.countByL10ncode", query = "SELECT COUNT(l) FROM L10n l WHERE l.code = :code"),
     @NamedQuery(name = "L10n.findAll", query = "SELECT l FROM L10n l ORDER BY l.code"),
     @NamedQuery(name = "L10n.findById", query = "SELECT l FROM L10n l WHERE l.id = :id"),
     @NamedQuery(name = "L10n.findByL10ncode", query = "SELECT l FROM L10n l WHERE l.code = :code"),
@@ -52,7 +55,8 @@ public class L10n implements Serializable, Comparable<L10n> {
     private static final int L10NURL_LENGTH = 160;
     @Transient
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    @TableGenerator(name="L10N", schema="APP", table="COUNTERS", pkColumnName="ENTITY", valueColumnName="VALUE", allocationSize = 5)
+    @TableGenerator(name="L10N", schema="APP", table="COUNTERS", pkColumnName="ENTITY",
+            valueColumnName="COUNTERVALUE", allocationSize = 5)
     @Id
     @GeneratedValue(strategy= GenerationType.TABLE, generator="L10N")
     @Basic(optional = false)
