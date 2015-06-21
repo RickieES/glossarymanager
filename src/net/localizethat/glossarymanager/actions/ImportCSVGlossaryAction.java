@@ -8,6 +8,7 @@ package net.localizethat.glossarymanager.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import net.localizethat.glossarymanager.GlossaryManager;
 import net.localizethat.glossarymanager.gui.ImportCSVGlossary;
 import net.localizethat.util.gui.ModalDialog;
 
@@ -36,7 +37,7 @@ public class ImportCSVGlossaryAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         csvImportPanel = new ImportCSVGlossary();
-        ModalDialog csvDialog = new ModalDialog(csvImportPanel);
+        ModalDialog csvDialog = new ModalDialog(GlossaryManager.mainWindow, csvImportPanel);
         csvDialog.showDialog();
         csvImportPanel = null;
     }
