@@ -41,7 +41,7 @@ public class CheckGlossaryWorker
     EntityManager em;
     JPanel resultsPanel;
     List<Glossary> glsToCheckList;
-    List<CheckGlossaryWorker.FailedEntry> lfe;
+    List<CheckGlossaryWorker.FailedEntry> failedEntriesList;
 
     /**
      * Make default constructor private so the class can't be instantiated without
@@ -69,7 +69,7 @@ public class CheckGlossaryWorker
         if (glsLength > 0) {
             this.glsToCheckList = Arrays.asList(glsList);
         }
-        lfe = new ArrayList<>(5);
+        failedEntriesList = new ArrayList<>(5);
     }
 
     @Override
@@ -90,12 +90,14 @@ public class CheckGlossaryWorker
         translatedWords = slicePhrase(translated);
         Collections.sort(translatedWords, ncsComp);
 
+        // Build a list of words from the original text present in glossaries
         Iterator<String> origWordsIt = originalWords.iterator();
         while (origWordsIt.hasNext()) {
             String word = origWordsIt.next();
             FailedEntry fe = new FailedEntry(word, true, null);
 
             glseQuery.setParameter("glseterm", word);
+            glse2Query.setParameter("glseterm", word);
 
             for(Glossary g : glsToCheckList) {
                 glseQuery.setParameter("glosid", g);
@@ -103,7 +105,6 @@ public class CheckGlossaryWorker
 
                 if (entries.isEmpty()) {
                     fe.setMatchCase(false);
-                    glse2Query.setParameter("glseterm", word);
                     glse2Query.setParameter("glosid", g);
                     entries = glse2Query.getResultList();
                 }
@@ -113,8 +114,9 @@ public class CheckGlossaryWorker
                 }
             }
 
-            if (fe.getLge().size() > 0) {
-                lfe.add(fe);
+            if (fe.getGlsEntriesList().size() > 0) {
+                // Just a "potential" failed entry at the moment
+                failedEntriesList.add(fe);
             }
         }
 
@@ -122,12 +124,12 @@ public class CheckGlossaryWorker
         // list of translated words. If it is, we remove the "potentially failed entry" and the
         // translated word; otherwise, the "potentially" failed entry turns into real failed
         // entry, being kept in the list
-        Iterator<FailedEntry> feIterator = lfe.iterator();
+        Iterator<FailedEntry> feIterator = failedEntriesList.iterator();
         while (feIterator.hasNext()) {
             FailedEntry fe = feIterator.next();
             boolean translationFound = false;
 
-            for(GlsEntry ge : fe.getLge()) {
+            for(GlsEntry ge : fe.getGlsEntriesList()) {
                 for(GlsTranslation gt : ge.getGlsTranslationCollection()) {
                     int index;
                     if (fe.isMatchCase()) {
@@ -153,19 +155,19 @@ public class CheckGlossaryWorker
         finish = System.currentTimeMillis();
         Logger.getLogger(CSVImporterWorker.class.getName()).log(Level.INFO,
                 "Check glossary exec time: {0} ms", (finish - start));
-        return lfe;
+        return failedEntriesList;
     }
 
     @Override
     public void done() {
-        if (lfe.isEmpty()) {
+        if (failedEntriesList.isEmpty()) {
             JLabel allOkLabel = new JLabel("Everything seems OK");
             resultsPanel.add(allOkLabel);
         } else {
-            for (FailedEntry fe : lfe) {
+            for (FailedEntry fe : failedEntriesList) {
                 StringBuilder sb = new StringBuilder(20);
                 sb.append("<html>");
-                for (GlsEntry ge : fe.getLge()) {
+                for (GlsEntry ge : fe.getGlsEntriesList()) {
                     for (GlsTranslation gt : ge.getGlsTranslationCollection()) {
                         sb.append("<b>");
                         sb.append(gt.getValue());
@@ -201,13 +203,13 @@ public class CheckGlossaryWorker
     public static class FailedEntry {
         private String word;
         private boolean matchCase;
-        private List<GlsEntry> lge;
+        private List<GlsEntry> GlsEntriesList;
 
         public FailedEntry(String word, boolean matchCase, GlsEntry ge) {
             this.word = word;
-            this.lge = new ArrayList<>(0);
+            this.GlsEntriesList = new ArrayList<>(0);
             if (ge != null) {
-                lge.add(ge);
+                GlsEntriesList.add(ge);
             }
         }
 
@@ -227,18 +229,18 @@ public class CheckGlossaryWorker
             this.matchCase = matchCase;
         }
 
-        public List<GlsEntry> getLge() {
-            return lge;
+        public List<GlsEntry> getGlsEntriesList() {
+            return GlsEntriesList;
         }
 
         public void addGe(GlsEntry ge) {
             if (ge != null) {
-                lge.add(ge);
+                GlsEntriesList.add(ge);
             }
         }
 
         public void clearLge() {
-            lge = new ArrayList<>(0);
+            GlsEntriesList = new ArrayList<>(0);
         }
     }
 
