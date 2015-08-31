@@ -20,7 +20,7 @@ import net.localizethat.util.gui.JStatusBar;
  * @author rpalomares
  */
 public class CheckGlossaryTester extends javax.swing.JPanel {
-
+    private static final long serialVersionUID = 1L;
     private final JStatusBar statusBar;
     private final EntityManagerFactory emf;
     private final Glossary g;
@@ -41,12 +41,10 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
         }
 
         refreshL10nList();
-
         g = entityManager.find(Glossary.class, 1);
-
-        cgttl = new CheckGlossaryTranslatedTextListener(origStrTextArea.getText(),
+        cgttl = new CheckGlossaryTranslatedTextListener(origStrTextPane.getText(),
                 this.trnsStrTextArea, (L10n) this.localeCombo.getSelectedItem(),
-                entityManager, resultsPanel, g);
+                entityManager, origStrTextPane, resultsPanel, g);
         trnsStrTextArea.getDocument().addDocumentListener(cgttl);
     }
 
@@ -69,7 +67,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
         l10nListModel = new net.localizethat.glossarymanager.gui.models.L10nListModel();
         origStrLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        origStrTextArea = new javax.swing.JTextArea();
+        origStrTextPane = new javax.swing.JTextPane();
         trnsStrLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         trnsStrTextArea = new javax.swing.JTextArea();
@@ -82,12 +80,8 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
 
         origStrLabel.setText("Original string:");
 
-        origStrTextArea.setColumns(20);
-        origStrTextArea.setRows(5);
-        origStrTextArea.setText("Check browser settings");
-        origStrTextArea.setToolTipText("Type or paste the original string");
-        origStrTextArea.addFocusListener(formListener);
-        jScrollPane1.setViewportView(origStrTextArea);
+        origStrTextPane.setText("Check the browser settings");
+        jScrollPane1.setViewportView(origStrTextPane);
 
         trnsStrLabel.setText("Translated string:");
 
@@ -117,24 +111,24 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(testButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(trnsStrLabel)
-                            .addComponent(origStrLabel)
-                            .addComponent(localeLabel))
+                            .addComponent(localeLabel)
+                            .addComponent(origStrLabel))
                         .addGap(3, 3, 3)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                            .addComponent(jScrollPane2)
-                            .addComponent(localeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(testButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                            .addComponent(localeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(origStrLabel)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -168,10 +162,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
         }
 
         public void focusLost(java.awt.event.FocusEvent evt) {
-            if (evt.getSource() == origStrTextArea) {
-                CheckGlossaryTester.this.origStrTextAreaFocusLost(evt);
-            }
-            else if (evt.getSource() == localeCombo) {
+            if (evt.getSource() == localeCombo) {
                 CheckGlossaryTester.this.localeComboFocusLost(evt);
             }
         }
@@ -179,15 +170,11 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
 
     private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
         cleanResultsPanel();
-        CheckGlossaryWorker cgw = new CheckGlossaryWorker(origStrTextArea.getText(),
+        CheckGlossaryWorker cgw = new CheckGlossaryWorker(origStrTextPane.getText(),
                 trnsStrTextArea.getText(), (L10n) localeCombo.getSelectedItem(),
-                entityManager, resultsPanel, g);
+                entityManager, origStrTextPane, resultsPanel, g);
         cgw.execute();
     }//GEN-LAST:event_testButtonActionPerformed
-
-    private void origStrTextAreaFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_origStrTextAreaFocusLost
-        cgttl.setOriginal(origStrTextArea.getText());
-    }//GEN-LAST:event_origStrTextAreaFocusLost
 
     private void localeComboFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_localeComboFocusLost
         cgttl.setLocale(localeCombo.getItemAt(localeCombo.getSelectedIndex()));
@@ -209,7 +196,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
     private javax.swing.JComboBox<L10n> localeCombo;
     private javax.swing.JLabel localeLabel;
     private javax.swing.JLabel origStrLabel;
-    private javax.swing.JTextArea origStrTextArea;
+    private javax.swing.JTextPane origStrTextPane;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JButton testButton;
     private javax.swing.JLabel trnsStrLabel;

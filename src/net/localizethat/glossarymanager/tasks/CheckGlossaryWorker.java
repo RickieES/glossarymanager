@@ -6,6 +6,7 @@
 
 package net.localizethat.glossarymanager.tasks;
 
+import java.awt.Color;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +21,11 @@ import javax.persistence.TypedQuery;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import net.localizethat.glossarymanager.GlossaryManager;
 import net.localizethat.glossarymanager.model.Glossary;
 import net.localizethat.glossarymanager.model.GlsEntry;
@@ -35,13 +40,15 @@ import net.localizethat.util.NoCaseStringComparator;
  */
 public class CheckGlossaryWorker
         extends SwingWorker<List<CheckGlossaryWorker.FailedEntry>, Void> {
-    String original;
-    String translated;
-    L10n locale;
-    EntityManager em;
-    JPanel resultsPanel;
-    List<Glossary> glsToCheckList;
-    List<CheckGlossaryWorker.FailedEntry> failedEntriesList;
+    private DefaultStyledDocument doc;
+    private String original;
+    private String translated;
+    private L10n locale;
+    private EntityManager em;
+    private JTextPane origStrPane;
+    private JPanel resultsPanel;
+    private List<Glossary> glsToCheckList;
+    private List<CheckGlossaryWorker.FailedEntry> failedEntriesList;
 
     /**
      * Make default constructor private so the class can't be instantiated without
@@ -51,7 +58,7 @@ public class CheckGlossaryWorker
     }
 
     public CheckGlossaryWorker(String original, String translated, L10n locale,
-            EntityManager em, JPanel resultsPanel, Glossary... glsList) {
+            EntityManager em, JTextPane origStrPane, JPanel resultsPanel, Glossary... glsList) {
         int glsLength = glsList.length;
 
         this.original = original;
@@ -64,6 +71,7 @@ public class CheckGlossaryWorker
             this.em = em;
         }
 
+        this.origStrPane = origStrPane;
         this.resultsPanel = resultsPanel;
 
         if (glsLength > 0) {
@@ -74,6 +82,10 @@ public class CheckGlossaryWorker
 
     @Override
     protected List<CheckGlossaryWorker.FailedEntry> doInBackground() throws Exception {
+        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        int docPos = 0;
+        int stringPos = 0; // Position in original text where next word is found
+        int lastStringPos = 0; // Position in original text right after last word was found
         long start = System.currentTimeMillis();
         long finish;
         List<String> originalWords;
@@ -89,15 +101,18 @@ public class CheckGlossaryWorker
         originalWords = slicePhrase(original);
         translatedWords = slicePhrase(translated);
         Collections.sort(translatedWords, ncsComp);
+        doc = new DefaultStyledDocument();
 
         // Build a list of words from the original text present in glossaries
         Iterator<String> origWordsIt = originalWords.iterator();
         while (origWordsIt.hasNext()) {
             String word = origWordsIt.next();
-            FailedEntry fe = new FailedEntry(word, true, null);
-
+            stringPos = original.indexOf(word, stringPos);
+            FailedEntry fe = new FailedEntry(word, stringPos, true, null);
+            
             glseQuery.setParameter("glseterm", word);
             glse2Query.setParameter("glseterm", word);
+            stringPos += word.length();
 
             for(Glossary g : glsToCheckList) {
                 glseQuery.setParameter("glosid", g);
@@ -108,7 +123,6 @@ public class CheckGlossaryWorker
                     glse2Query.setParameter("glosid", g);
                     entries = glse2Query.getResultList();
                 }
-
                 for(GlsEntry ge : entries) {
                     fe.addGe(ge);
                 }
@@ -129,6 +143,12 @@ public class CheckGlossaryWorker
             FailedEntry fe = feIterator.next();
             boolean translationFound = false;
 
+            // Insert the text
+            stringPos = fe.getPos();
+            doc.insertString(docPos, original.substring(lastStringPos, stringPos), attrs);
+            docPos += (stringPos - lastStringPos);
+            lastStringPos += (stringPos - lastStringPos);
+        
             for(GlsEntry ge : fe.getGlsEntriesList()) {
                 for(GlsTranslation gt : ge.getGlsTranslationCollection()) {
                     int index;
@@ -148,9 +168,27 @@ public class CheckGlossaryWorker
                 }
             }
             if (translationFound) {
+                doc.insertString(docPos, fe.getWord(), attrs);
+                docPos += fe.getWord().length();
+                lastStringPos += fe.getWord().length();
+                
                 feIterator.remove();
+            } else {
+                StyleConstants.setBold(attrs, true);
+                StyleConstants.setForeground(attrs, Color.red);
+                doc.insertString(docPos, fe.getWord(), attrs);
+                StyleConstants.setBold(attrs, false);
+                StyleConstants.setForeground(attrs, Color.black);
+                docPos += fe.getWord().length();
+                lastStringPos += fe.getWord().length();
             }
         }
+
+        // Insert the remaining text
+        stringPos = original.length();
+        doc.insertString(docPos, original.substring(lastStringPos, stringPos), attrs);
+        docPos += (stringPos - lastStringPos);
+        lastStringPos += (stringPos - lastStringPos);
 
         finish = System.currentTimeMillis();
         Logger.getLogger(CSVImporterWorker.class.getName()).log(Level.INFO,
@@ -160,6 +198,8 @@ public class CheckGlossaryWorker
 
     @Override
     public void done() {
+        origStrPane.setDocument(doc);
+        origStrPane.repaint();
         if (failedEntriesList.isEmpty()) {
             JLabel allOkLabel = new JLabel("Everything seems OK");
             resultsPanel.add(allOkLabel);
@@ -202,11 +242,13 @@ public class CheckGlossaryWorker
 
     public static class FailedEntry {
         private String word;
+        private int pos;
         private boolean matchCase;
         private List<GlsEntry> GlsEntriesList;
 
-        public FailedEntry(String word, boolean matchCase, GlsEntry ge) {
+        public FailedEntry(String word, int pos, boolean matchCase, GlsEntry ge) {
             this.word = word;
+            this.pos = pos;
             this.GlsEntriesList = new ArrayList<>(0);
             if (ge != null) {
                 GlsEntriesList.add(ge);
@@ -219,6 +261,14 @@ public class CheckGlossaryWorker
 
         public void setWord(String word) {
             this.word = word;
+        }
+
+        public int getPos() {
+            return pos;
+        }
+
+        public void setPos(int pos) {
+            this.pos = pos;
         }
 
         public boolean isMatchCase() {

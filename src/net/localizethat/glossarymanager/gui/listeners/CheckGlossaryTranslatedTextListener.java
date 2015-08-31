@@ -9,6 +9,7 @@ package net.localizethat.glossarymanager.gui.listeners;
 import javax.persistence.EntityManager;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import net.localizethat.glossarymanager.model.Glossary;
 import net.localizethat.glossarymanager.model.L10n;
@@ -21,15 +22,17 @@ public class CheckGlossaryTranslatedTextListener extends AbstractSimpleDocumentL
     private final JTextArea translatedTextArea;
     private L10n locale;
     private final EntityManager em;
+    private final JTextPane origStrPane;
     private final JPanel resultsPanel;
     Glossary[] glsList;
 
     public CheckGlossaryTranslatedTextListener(String original, JTextArea translatedTextArea,
-            L10n locale, EntityManager em, JPanel resultsPanel, Glossary... glsList) {
+            L10n locale, EntityManager em, JTextPane origStrPane, JPanel resultsPanel, Glossary... glsList) {
         this.original = original;
         this.translatedTextArea = translatedTextArea;
         this.locale = locale;
         this.em = em;
+        this.origStrPane = origStrPane;
         this.resultsPanel = resultsPanel;
         this.glsList = glsList;
     }
@@ -47,7 +50,7 @@ public class CheckGlossaryTranslatedTextListener extends AbstractSimpleDocumentL
         if ((cgw == null) || (cgw.isDone())) {
             cleanResultsPanel();
             cgw = new CheckGlossaryWorker(original, translatedTextArea.getText(),
-                    locale, em, resultsPanel, glsList);
+                    locale, em, origStrPane, resultsPanel, glsList);
             cgw.execute();
         }
     }
