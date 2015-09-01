@@ -80,14 +80,14 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
 
         origStrLabel.setText("Original string:");
 
-        origStrTextPane.setText("Check the browser settings");
+        origStrTextPane.setText("<ul>\n  <li>Check the address for typing errors such as\n    <strong>ww</strong>.example.com instead of\n    <strong>www</strong>.example.com</li>\n  <li>If you are unable to load any pages, check your computer's network\n    connection.</li>\n  <li>If your computer or network is protected by a firewall or proxy, make sure\n    that &brandShortName; is permitted to access the Web.</li>\n</ul>");
         jScrollPane1.setViewportView(origStrTextPane);
 
         trnsStrLabel.setText("Translated string:");
 
         trnsStrTextArea.setColumns(20);
         trnsStrTextArea.setRows(5);
-        trnsStrTextArea.setText("Revise la configuración del navegador");
+        trnsStrTextArea.setText("<ul>\n <li>Compruebe que la dirección no tiene errores de escritura del tipo <strong>ww</strong>.ejemplo.com en lugar de <strong>www</strong>.ejemplo.com</li>\n <li>Si no puede cargar ninguna página, compruebe la conexión de red de su ordenador.</li>\n <li>Si su ordenador o red están protegidos por un cortafuegos o proxy, asegúrese de que &brandShortName; tiene permiso para acceder a la web.</li>\n</ul>");
         trnsStrTextArea.setToolTipText("Type or paste the translation");
         jScrollPane2.setViewportView(trnsStrTextArea);
 
@@ -118,11 +118,10 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
                             .addComponent(localeLabel)
                             .addComponent(origStrLabel))
                         .addGap(3, 3, 3)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
                             .addComponent(localeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jScrollPane1))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

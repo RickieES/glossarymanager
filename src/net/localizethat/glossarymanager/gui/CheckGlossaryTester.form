@@ -40,12 +40,11 @@
                           <Component id="origStrLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jScrollPane2" pref="422" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jScrollPane2" pref="662" max="32767" attributes="0"/>
                           <Component id="localeCombo" max="32767" attributes="0"/>
-                          <Component id="jScrollPane1" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -94,7 +93,7 @@
       <SubComponents>
         <Component class="javax.swing.JTextPane" name="origStrTextPane">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Check the browser settings"/>
+            <Property name="text" type="java.lang.String" value="&lt;ul&gt;&#xa;  &lt;li&gt;Check the address for typing errors such as&#xa;    &lt;strong&gt;ww&lt;/strong&gt;.example.com instead of&#xa;    &lt;strong&gt;www&lt;/strong&gt;.example.com&lt;/li&gt;&#xa;  &lt;li&gt;If you are unable to load any pages, check your computer&apos;s network&#xa;    connection.&lt;/li&gt;&#xa;  &lt;li&gt;If your computer or network is protected by a firewall or proxy, make sure&#xa;    that &amp;brandShortName; is permitted to access the Web.&lt;/li&gt;&#xa;&lt;/ul&gt;"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -115,7 +114,7 @@
           <Properties>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
-            <Property name="text" type="java.lang.String" value="Revise la configuraci&#xf3;n del navegador"/>
+            <Property name="text" type="java.lang.String" value="&lt;ul&gt;&#xa; &lt;li&gt;Compruebe que la direcci&#xf3;n no tiene errores de escritura del tipo &lt;strong&gt;ww&lt;/strong&gt;.ejemplo.com en lugar de &lt;strong&gt;www&lt;/strong&gt;.ejemplo.com&lt;/li&gt;&#xa; &lt;li&gt;Si no puede cargar ninguna p&#xe1;gina, compruebe la conexi&#xf3;n de red de su ordenador.&lt;/li&gt;&#xa; &lt;li&gt;Si su ordenador o red est&#xe1;n protegidos por un cortafuegos o proxy, aseg&#xfa;rese de que &amp;brandShortName; tiene permiso para acceder a la web.&lt;/li&gt;&#xa;&lt;/ul&gt;"/>
             <Property name="toolTipText" type="java.lang.String" value="Type or paste the translation"/>
           </Properties>
         </Component>

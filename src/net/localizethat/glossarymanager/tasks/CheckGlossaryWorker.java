@@ -18,14 +18,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import net.localizethat.glossarymanager.GlossaryManager;
 import net.localizethat.glossarymanager.model.Glossary;
 import net.localizethat.glossarymanager.model.GlsEntry;
@@ -40,7 +41,7 @@ import net.localizethat.util.NoCaseStringComparator;
  */
 public class CheckGlossaryWorker
         extends SwingWorker<List<CheckGlossaryWorker.FailedEntry>, Void> {
-    private DefaultStyledDocument doc;
+    private StyledDocument doc;
     private String original;
     private String translated;
     private L10n locale;
@@ -82,7 +83,9 @@ public class CheckGlossaryWorker
 
     @Override
     protected List<CheckGlossaryWorker.FailedEntry> doInBackground() throws Exception {
-        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        SimpleAttributeSet regularStyle = new SimpleAttributeSet();
+        SimpleAttributeSet failedCheckStyle = new SimpleAttributeSet();
+        SimpleAttributeSet suggestionStyle;
         int docPos = 0;
         int stringPos = 0; // Position in original text where next word is found
         int lastStringPos = 0; // Position in original text right after last word was found
@@ -92,16 +95,26 @@ public class CheckGlossaryWorker
         List<String> translatedWords;
         List<GlsEntry> entries;
         NoCaseStringComparator ncsComp = new NoCaseStringComparator();
+        ImageIcon failedEntryIcon = new ImageIcon(CheckGlossaryWorker.class.getResource(
+                    "/net/localizethat/resources/16-sug-button.png"));
 
         TypedQuery<GlsEntry> glseQuery = em.createNamedQuery("GlsEntry.findByGlsAndTerm",
                 GlsEntry.class);
         TypedQuery<GlsEntry> glse2Query = em.createNamedQuery("GlsEntry.findByGlsAndTermLoCase",
                 GlsEntry.class);
 
+        // Define style for regular text (not failed or not a glossary entry)
+        StyleConstants.setBold(regularStyle, false);
+        StyleConstants.setForeground(regularStyle, Color.black);
+        // ...and another one for failed words
+        StyleConstants.setBold(failedCheckStyle, true);
+        StyleConstants.setForeground(failedCheckStyle, Color.red);
+
         originalWords = slicePhrase(original);
         translatedWords = slicePhrase(translated);
         Collections.sort(translatedWords, ncsComp);
-        doc = new DefaultStyledDocument();
+        doc = origStrPane.getStyledDocument();
+        doc.remove(0, doc.getLength());
 
         // Build a list of words from the original text present in glossaries
         Iterator<String> origWordsIt = originalWords.iterator();
@@ -143,9 +156,9 @@ public class CheckGlossaryWorker
             FailedEntry fe = feIterator.next();
             boolean translationFound = false;
 
-            // Insert the text
+            // Insert the text not matched as glossary entry
             stringPos = fe.getPos();
-            doc.insertString(docPos, original.substring(lastStringPos, stringPos), attrs);
+            doc.insertString(docPos, original.substring(lastStringPos, stringPos), regularStyle);
             docPos += (stringPos - lastStringPos);
             lastStringPos += (stringPos - lastStringPos);
         
@@ -168,25 +181,49 @@ public class CheckGlossaryWorker
                 }
             }
             if (translationFound) {
-                doc.insertString(docPos, fe.getWord(), attrs);
+                // Insert the not failed glossary entry as regular text
+                doc.insertString(docPos, fe.getWord(), regularStyle);
                 docPos += fe.getWord().length();
                 lastStringPos += fe.getWord().length();
                 
+                // And remove the not failed entry
                 feIterator.remove();
             } else {
-                StyleConstants.setBold(attrs, true);
-                StyleConstants.setForeground(attrs, Color.red);
-                doc.insertString(docPos, fe.getWord(), attrs);
-                StyleConstants.setBold(attrs, false);
-                StyleConstants.setForeground(attrs, Color.black);
+                // Insert the failed word with the failed check style
+                doc.insertString(docPos, fe.getWord(), failedCheckStyle);
                 docPos += fe.getWord().length();
                 lastStringPos += fe.getWord().length();
+
+                // Create an icon to display suggestions
+                StringBuilder sb = new StringBuilder(20);
+                sb.append("<html>");
+                for (GlsEntry ge : fe.getGlsEntriesList()) {
+                    for (GlsTranslation gt : ge.getGlsTranslationCollection()) {
+                        sb.append("<b>");
+                        sb.append(gt.getValue());
+                        sb.append("</b>");
+                        sb.append(" (from ");
+                        sb.append(ge.getGlosId().getName());
+                        sb.append(")");
+                        sb.append("<br>");
+                    }
+                }
+                sb.append("</html>");
+                JLabel l = new JLabel(failedEntryIcon);
+                l.setToolTipText(sb.toString());
+
+                // Create a new style (because the label must be different each time to
+                // hold the corresponding suggestions) and attach to the style the label
+                suggestionStyle = new SimpleAttributeSet();
+                StyleConstants.setComponent(suggestionStyle, l);
+                doc.insertString(docPos, " ", suggestionStyle);
+                docPos = doc.getLength();
             }
         }
 
         // Insert the remaining text
         stringPos = original.length();
-        doc.insertString(docPos, original.substring(lastStringPos, stringPos), attrs);
+        doc.insertString(docPos, original.substring(lastStringPos, stringPos), regularStyle);
         docPos += (stringPos - lastStringPos);
         lastStringPos += (stringPos - lastStringPos);
 
@@ -198,7 +235,7 @@ public class CheckGlossaryWorker
 
     @Override
     public void done() {
-        origStrPane.setDocument(doc);
+        // origStrPane.setDocument(doc);
         origStrPane.repaint();
         if (failedEntriesList.isEmpty()) {
             JLabel allOkLabel = new JLabel("Everything seems OK");
