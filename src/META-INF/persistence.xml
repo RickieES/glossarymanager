@@ -2,11 +2,11 @@
 <persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
   <persistence-unit name="GlossaryManagerPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-    <class>net.localizethat.glossarymanager.model.Glossary</class>
-    <class>net.localizethat.glossarymanager.model.GlsEntry</class>
-    <class>net.localizethat.glossarymanager.model.L10n</class>
-    <class>net.localizethat.glossarymanager.model.GlsTranslation</class>
-    <class>net.localizethat.glossarymanager.model.ConfigValue</class>
+    <class>net.localizethat.model.Glossary</class>
+    <class>net.localizethat.model.GlsEntry</class>
+    <class>net.localizethat.model.L10n</class>
+    <class>net.localizethat.model.ConfigValue</class>
+    <class>net.localizethat.model.GlsTranslation</class>
     <properties>
       <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
       <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/lt-data"/>
