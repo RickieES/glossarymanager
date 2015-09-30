@@ -9,7 +9,7 @@ package net.localizethat.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import net.localizethat.Main;
-import net.localizethat.gui.GlossaryGuiManager;
+import net.localizethat.gui.tabpanels.GlossaryGuiManager;
 
 /**
  * Opens a tab with the Glossary manager in the main window
