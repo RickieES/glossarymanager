@@ -16,7 +16,10 @@
     </Component>
     <Component class="net.localizethat.gui.models.GlossaryListModel" name="glossaryListModel">
     </Component>
-    <Component class="net.localizethat.gui.models.L10nListModel" name="l10nListModel">
+    <Component class="net.localizethat.gui.models.ListComboBoxGenericModel" name="l10nComboModel">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;L10n&gt;"/>
+      </AuxValues>
     </Component>
   </NonVisualComponents>
   <Events>
@@ -130,6 +133,11 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="localeSelCombo">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="l10nComboModel" type="bean"/>
+            </Property>
+          </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="localeSelComboActionPerformed"/>
           </Events>

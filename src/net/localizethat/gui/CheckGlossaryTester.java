@@ -51,8 +51,8 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
     private void refreshL10nList() {
         TypedQuery<L10n> l10nQuery = entityManager.createNamedQuery("L10n.findAll",
                 L10n.class);
-        l10nListModel.clearAll();
-        l10nListModel.addAll(l10nQuery.getResultList());
+        l10nComboModel.clearAll();
+        l10nComboModel.addAll(l10nQuery.getResultList());
     }
 
     /**
@@ -64,7 +64,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
     private void initComponents() {
 
         entityManager = emf.createEntityManager();
-        l10nListModel = new net.localizethat.gui.models.L10nListModel();
+        l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
         origStrLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         origStrTextPane = new javax.swing.JTextPane();
@@ -93,7 +93,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
 
         localeLabel.setText("Locale:");
 
-        localeCombo.setModel(l10nListModel);
+        localeCombo.setModel(l10nComboModel);
         localeCombo.addFocusListener(formListener);
 
         resultsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -191,7 +191,7 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
     private javax.persistence.EntityManager entityManager;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private net.localizethat.gui.models.L10nListModel l10nListModel;
+    private net.localizethat.gui.models.ListComboBoxGenericModel<L10n> l10nComboModel;
     private javax.swing.JComboBox<L10n> localeCombo;
     private javax.swing.JLabel localeLabel;
     private javax.swing.JLabel origStrLabel;

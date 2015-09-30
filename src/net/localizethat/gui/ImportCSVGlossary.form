@@ -12,7 +12,10 @@
     </Component>
     <Component class="net.localizethat.gui.models.GlossaryListModel" name="glosListModel">
     </Component>
-    <Component class="net.localizethat.gui.models.L10nListModel" name="l10nListModel">
+    <Component class="net.localizethat.gui.models.ListComboBoxGenericModel" name="l10nComboModel">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;L10n&gt;"/>
+      </AuxValues>
     </Component>
   </NonVisualComponents>
   <AuxValues>
@@ -801,6 +804,11 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JComboBox" name="trnsLocaleCombo">
+                      <Properties>
+                        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection component="l10nComboModel" type="bean"/>
+                        </Property>
+                      </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;L10n&gt;"/>
                       </AuxValues>

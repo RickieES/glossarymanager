@@ -101,8 +101,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private void refreshL10nList() {
         TypedQuery<L10n> l10nQuery = entityManager.createNamedQuery("L10n.findAll",
                 L10n.class);
-        l10nListModel.clearAll();
-        l10nListModel.addAll(l10nQuery.getResultList());
+        l10nComboModel.clearAll();
+        l10nComboModel.addAll(l10nQuery.getResultList());
     }
 
     private void retrieveSavedCSVImportSettings() {
@@ -132,7 +132,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             firstRowHeadersCheck.setSelected(cis.isFirstRowHasHeaders());
 
             if (cis.getImportLocale() != null) {
-                l10nListModel.setSelectedItem(cis.getImportLocale());
+                l10nComboModel.setSelectedItem(cis.getImportLocale());
             }
 
             multValueSeparatorField.setText(String.valueOf(cis.getMultipeValuesSeparator()));
@@ -177,7 +177,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
 
         entityManager = emf.createEntityManager();
         glosListModel = new net.localizethat.gui.models.GlossaryListModel();
-        l10nListModel = new net.localizethat.gui.models.L10nListModel();
+        l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         generalPanel = new javax.swing.JPanel();
         filenameLabel = new javax.swing.JLabel();
@@ -477,6 +477,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
         trnsLocaleLabel.setLabelFor(trnsLocaleCombo);
         trnsLocaleLabel.setText("Translation locale:");
 
+        trnsLocaleCombo.setModel(l10nComboModel);
+
         jLabel1.setText("Fields labeled in red are the minimum you should specify to be able to import anything");
 
         javax.swing.GroupLayout FieldAssignmentPanelLayout = new javax.swing.GroupLayout(FieldAssignmentPanel);
@@ -709,7 +711,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
                     .setFieldDelimiter(fieldDelimField.getText().charAt(0))
                     .setFileLines(fileLines)
                     .setFirstRowHasHeaders(firstRowHeadersCheck.isSelected())
-                    .setImportLocale((L10n) l10nListModel.getSelectedItem())
+                    .setImportLocale((L10n) l10nComboModel.getSelectedItem())
                     .setMultipeValuesSeparator(multValueSeparatorField.getText().charAt(0))
                     .setMultipleValuesOnTranslation(multipleValuesInTrnsCheck.isSelected())
                     .setOnExistingTerms((OnExistingTermAction) onExistingTermsCombo.getSelectedItem())
@@ -774,7 +776,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private net.localizethat.gui.models.L10nListModel l10nListModel;
+    private net.localizethat.gui.models.ListComboBoxGenericModel<L10n> l10nComboModel;
     private javax.swing.JTextField multValueSeparatorField;
     private javax.swing.JCheckBox multipleValuesInTrnsCheck;
     private javax.swing.JLabel ofFileLinesLabel;

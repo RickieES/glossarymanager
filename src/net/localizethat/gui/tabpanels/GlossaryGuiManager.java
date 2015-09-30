@@ -3,45 +3,45 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package net.localizethat.gui;
+package net.localizethat.gui.tabpanels;
 
 import java.beans.Beans;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import net.localizethat.Main;
-import net.localizethat.gui.models.GlossaryTableModel;
 import net.localizethat.model.Glossary;
 import net.localizethat.model.L10n;
-import net.localizethat.model.jpa.GlossaryJpaController;
-import net.localizethat.model.jpa.exceptions.IllegalOrphanException;
-import net.localizethat.model.jpa.exceptions.NonexistentEntityException;
-import net.localizethat.util.gui.DBDialog;
 import net.localizethat.util.gui.JStatusBar;
 
 /**
  * Glossary management GUI
  * @author rpalomares
  */
-public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
+public class GlossaryGuiManager extends AbstractTabPanel {
     private static final long serialVersionUID = 1L;
     EntityManagerFactory emf;
-    GlossaryJpaController gpc;
+    // GlossaryJpaController gpc;
+    SimpleDateFormat dateFormat;
+    Glossary selectedGlossary;
     JStatusBar statusBar;
 
     /**
      * Creates new form GlossaryGuiManager
      */
     public GlossaryGuiManager() {
+        dateFormat = new SimpleDateFormat("HH:mm:ss");
         statusBar = Main.mainWindow.getStatusBar();
         emf = Main.emf;
-        gpc = new GlossaryJpaController(emf);
+        // gpc = new GlossaryJpaController(emf);
         // The following code is executed inside initComponents()
         // entityManager = emf.createEntityManager();
 
@@ -60,13 +60,82 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
                 Glossary.class);
         glosTableModel.clearAll();
         glosTableModel.addAll(glosQuery.getResultList());
+        glosTableModel.fireTableDataChanged();
     }
 
     private void refreshL10nList() {
         TypedQuery<L10n> l10nQuery = entityManager.createNamedQuery("L10n.findAll",
                 L10n.class);
-        l10nListsModel.clearAll();
-        l10nListsModel.addAll(l10nQuery.getResultList());
+        l10nComboModel.clearAll();
+        l10nComboModel.addAll(l10nQuery.getResultList());
+    }
+
+    private void enableButtonsAndFields(boolean activate) {
+        glosNameField.setEnabled(activate);
+        glosVersionField.setEnabled(activate);
+        glosMasterLocaleCombo.setEnabled(activate);
+        saveGlossaryButton.setEnabled(activate);
+        refreshButton.setEnabled(activate);
+        deleteGlossaryButton.setEnabled(activate);
+    }
+
+    private boolean validateOnSave() {
+        // Validation 1: the glossary name must not be empty
+        if (glosNameField.getText().trim().isEmpty()) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: Glossary name can't be empty",
+                    "The glosasry name must not be empty");
+            return false;
+        }
+
+        // Validation 2: the glossary name can't exist already in the database,
+        // except in the same item
+        TypedQuery<Glossary> validationQuery = entityManager.createNamedQuery(
+                "Glossary.findByGlosname", Glossary.class);
+        validationQuery.setParameter("name", glosNameField.getText());
+        List<Glossary> listGlossary = validationQuery.getResultList();
+        int listLength = listGlossary.size();
+        boolean isOk;
+        if (listLength == 0) {
+            isOk = true;
+        } else if (listLength == 1) {
+            Glossary glosInDB = listGlossary.get(0);
+            isOk = (Objects.equals(glosInDB.getId(), selectedGlossary.getId()));
+        } else {
+            // This should never be reached, since we don't allow more than one product
+            // with the same name, but it is checked just as defensive programming
+            isOk = false;
+        }
+        if (!isOk) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: Glossary name already exists",
+                    "The glossary name of the entity you want to save already exists in the database");
+            return false;
+        }
+
+        return true;
+    }
+
+    private String validateOnDelete() {
+        boolean okToDelete = true;
+        StringBuilder failedCheckLongMessage = new StringBuilder(25);
+
+        // Check that no GlsEntry is using it
+        TypedQuery<Long> validationQuery = entityManager.createNamedQuery(
+                "GlsEntry.countByGlossary", Long.class);
+        validationQuery.setParameter("glosid", selectedGlossary);
+        long recordCount = validationQuery.getSingleResult();
+        if (recordCount > 0) {
+            okToDelete = false;
+            failedCheckLongMessage.append("The glossary can't be deleted because there are ");
+            failedCheckLongMessage.append(recordCount).append(" entries belonging to it\n");
+        }
+
+        if (okToDelete) {
+            return "";
+        } else {
+            return failedCheckLongMessage.toString();
+        }
     }
 
     /**
@@ -79,7 +148,7 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
 
         entityManager = emf.createEntityManager();
         glosTableModel = new net.localizethat.gui.models.GlossaryTableModel();
-        l10nListsModel = new net.localizethat.gui.models.L10nListModel();
+        l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
         jScrollPane1 = new javax.swing.JScrollPane();
         glossaryTable = new javax.swing.JTable();
         buttonPanel = new javax.swing.JPanel();
@@ -111,21 +180,28 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
 
         saveGlossaryButton.setText("Save");
         saveGlossaryButton.setToolTipText("Save changes to selected glossary");
+        saveGlossaryButton.setEnabled(false);
         saveGlossaryButton.addActionListener(formListener);
 
         refreshButton.setText("Refresh");
+        refreshButton.setEnabled(false);
         refreshButton.addActionListener(formListener);
 
         deleteGlossaryButton.setText("Delete");
+        deleteGlossaryButton.setEnabled(false);
         deleteGlossaryButton.addActionListener(formListener);
 
         glosNameLabel.setDisplayedMnemonic('N');
         glosNameLabel.setLabelFor(glosNameField);
         glosNameLabel.setText("Name:");
 
+        glosNameField.setEnabled(false);
+
         glosVersionLabel.setDisplayedMnemonic('V');
         glosVersionLabel.setLabelFor(glosVersionField);
         glosVersionLabel.setText("Version:");
+
+        glosVersionField.setEnabled(false);
 
         glosCreationDateLabel.setText("Creation Date:");
 
@@ -141,7 +217,8 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
         glosMasterLocaleLabel.setLabelFor(glosMasterLocaleCombo);
         glosMasterLocaleLabel.setText("Master Locale:");
 
-        glosMasterLocaleCombo.setModel(l10nListsModel);
+        glosMasterLocaleCombo.setModel(l10nComboModel);
+        glosMasterLocaleCombo.setEnabled(false);
 
         javax.swing.GroupLayout buttonPanelLayout = new javax.swing.GroupLayout(buttonPanel);
         buttonPanel.setLayout(buttonPanelLayout);
@@ -257,21 +334,34 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void deleteGlossaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteGlossaryButtonActionPerformed
-        int answer = JOptionPane.showConfirmDialog(this.getParent(), "Really delete the selected glossary?",
-            "Confirm deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        String failedCheckMessage = validateOnDelete();
+        boolean validateOnDeleteCheck = (failedCheckMessage.length() == 0);
+
+        if (!validateOnDeleteCheck) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Sorry, can't delete this glossary because it is being used", failedCheckMessage);
+            return;
+        }
+
+        int answer = JOptionPane.showConfirmDialog(this.getParent(),
+                "Really delete the selected glossary?", "Confirm deletion",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (answer == JOptionPane.YES_OPTION) {
-            int index = glossaryTable.convertRowIndexToModel(glossaryTable.getSelectedRow());
-
-            Glossary g = glosTableModel.getElement(index);
+            // int index = glossaryTable.convertRowIndexToModel(glossaryTable.getSelectedRow());
+            // Glossary g = glosTableModel.getElement(index);
             try {
-                gpc.destroy(g.getId());
-                glosTableModel.removeElement(g);
-                statusBar.setText(JStatusBar.LogMsgType.INFO, "Element(s) deleted");
-            } catch (NonexistentEntityException | IllegalOrphanException ex) {
+                entityManager.remove(selectedGlossary);
+                entityManager.getTransaction().commit();
+                entityManager.getTransaction().begin();
+                refreshGlossaryList();
+                statusBar.setText(JStatusBar.LogMsgType.INFO, "Glossary deleted");
+                enableButtonsAndFields(false);
+                selectedGlossary = null;
+            } catch (IllegalArgumentException ex) {
                 Logger.getLogger(GlossaryGuiManager.class.getName()).log(Level.SEVERE, null, ex);
                 statusBar.logMessage(JStatusBar.LogMsgType.ERROR, "Error while deleting",
-                    "Error while deleting element", ex);
+                        "Error while deleting glossary", ex);
             }
         }
     }//GEN-LAST:event_deleteGlossaryButtonActionPerformed
@@ -281,18 +371,29 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
         refreshGlossaryList();
         glosTableModel.fireTableDataChanged();
         statusBar.setInfoText("Data refreshed");
+        Date now = new Date();
+        refreshButton.setToolTipText("Last refreshed at " + dateFormat.format(now));
+        enableButtonsAndFields(false);
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void saveGlossaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveGlossaryButtonActionPerformed
-        int index = glossaryTable.convertRowIndexToModel(glossaryTable.getSelectedRow());
+        // validateOnSave will report the specific problem in the status bar
+        if (!validateOnSave()) {
+            return;
+        }
 
-        Glossary g = glosTableModel.getElement(index);
+        int index = glossaryTable.convertRowIndexToModel(glossaryTable.getSelectedRow());
+        // Glossary g = glosTableModel.getElement(index);
+        Glossary g = entityManager.find(Glossary.class, selectedGlossary.getId());
         g.setName(glosNameField.getText());
         g.setVersion(glosVersionField.getText());
         g.setLastUpdate(new Date());
         g.setL10nId((L10n) glosMasterLocaleCombo.getSelectedItem());
         try {
-            gpc.edit(g);
+            boolean dummy = entityManager.contains(g);
+            // gpc.edit(g);
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
             glosTableModel.fireTableRowsUpdated(index, index);
             statusBar.setText(JStatusBar.LogMsgType.INFO, "Changes saved");
         } catch (Exception ex) {
@@ -308,15 +409,19 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
         g.setVersion("");
         g.setCreationDate(new Date());
         g.setLastUpdate(new Date());
-        g.setL10nId(l10nListsModel.getElementAt(0));
+        g.setL10nId(l10nComboModel.getElementAt(0));
         try {
-            gpc.create(g);
+            // gpc.create(g);
+            entityManager.persist(g);
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
             statusBar.setText(JStatusBar.LogMsgType.INFO,
                 "New item added, use detail fields to complete it");
             glosTableModel.addElement(g);
             int index = glosTableModel.getIndexOf(g);
             glossaryTable.setRowSelectionInterval(index, index);
             glossaryTable.scrollRectToVisible(glossaryTable.getCellRect(index, 0, true));
+            enableButtonsAndFields(true);
             glosNameField.requestFocus();
         } catch (Exception ex) {
             Logger.getLogger(GlossaryGuiManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -342,25 +447,37 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
     private javax.swing.JLabel glosVersionLabel;
     private javax.swing.JTable glossaryTable;
     private javax.swing.JScrollPane jScrollPane1;
-    private net.localizethat.gui.models.L10nListModel l10nListsModel;
+    private net.localizethat.gui.models.ListComboBoxGenericModel<L10n> l10nComboModel;
     private javax.swing.JButton newGlossaryButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton saveGlossaryButton;
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public EntityManager getEntityManager() {
-        return entityManager;
+    public void onTabPanelAdded() {
+        if (entityManager == null) {
+            entityManager = emf.createEntityManager();
+            entityManager.getTransaction().begin();
+        }
+
+        refreshL10nList();
+//        selectedL10n = null;
+//        l10nCodeField.setText("");
+//        l10nDescriptionField.setText("");
+//        l10nTeamNameField.setText("");
+//        l10nUrlField.setText("");
+//        l10nCreationDateField.setText("");
+//        l10nLastUpdatedField.setText("");
     }
 
     @Override
-    public void refreshEntityManager(Object o) {
-        entityManager.refresh(o);
-    }
-
-    @Override
-    public void closeEntityManager() {
+    public void onTabPanelRemoved() {
+        if (entityManager.getTransaction().isActive()) {
+            entityManager.flush();
+            entityManager.getTransaction().commit();
+        }
         entityManager.close();
+        entityManager = null;
     }
 
     private class GlossaryTableRowListener implements ListSelectionListener {
@@ -371,16 +488,14 @@ public class GlossaryGuiManager extends javax.swing.JPanel implements DBDialog {
             }
             int selectedRow = glossaryTable.getSelectedRow();
             if (selectedRow != -1) {
-                glosNameField.setText(glossaryTable.getValueAt(selectedRow,
-                        GlossaryTableModel.COLUMN_HEADER_NAME).toString());
-                glosVersionField.setText(glossaryTable.getValueAt(selectedRow,
-                        GlossaryTableModel.COLUMN_HEADER_VERSION).toString());
-                glosCreationDateField.setText(glossaryTable.getValueAt(selectedRow,
-                        GlossaryTableModel.COLUMN_HEADER_CREATIONDATE).toString());
-                glosLastUpdateField.setText(glossaryTable.getValueAt(selectedRow,
-                        GlossaryTableModel.COLUMN_HEADER_LASTUPDATE).toString());
-                glosMasterLocaleCombo.setSelectedItem((L10n) glossaryTable.getValueAt(selectedRow,
-                        GlossaryTableModel.COLUMN_HEADER_L10N_ID));
+                selectedRow = glossaryTable.convertRowIndexToModel(selectedRow);
+                selectedGlossary = glosTableModel.getElement(selectedRow);
+                glosNameField.setText(selectedGlossary.getName());
+                glosVersionField.setText(selectedGlossary.getVersion());
+                glosCreationDateField.setText(selectedGlossary.getCreationDate().toString());
+                glosLastUpdateField.setText(selectedGlossary.getLastUpdate().toString());
+                glosMasterLocaleCombo.setSelectedItem(selectedGlossary.getL10nId());
+                enableButtonsAndFields(true);
             }
         }
     }
