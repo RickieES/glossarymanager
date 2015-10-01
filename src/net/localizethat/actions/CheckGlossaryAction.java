@@ -9,7 +9,7 @@ package net.localizethat.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import net.localizethat.Main;
-import net.localizethat.gui.CheckGlossaryTester;
+import net.localizethat.gui.tabpanels.CheckGlossaryTester;
 
 /**
  * Opens a tab in the main window that allows to test strings against the glossary

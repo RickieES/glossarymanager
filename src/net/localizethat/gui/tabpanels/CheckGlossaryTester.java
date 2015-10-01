@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package net.localizethat.gui;
+package net.localizethat.gui.tabpanels;
 
 import java.beans.Beans;
 import javax.persistence.EntityManagerFactory;
@@ -19,7 +19,7 @@ import net.localizethat.util.gui.JStatusBar;
  *
  * @author rpalomares
  */
-public class CheckGlossaryTester extends javax.swing.JPanel {
+public class CheckGlossaryTester extends AbstractTabPanel {
     private static final long serialVersionUID = 1L;
     private final JStatusBar statusBar;
     private final EntityManagerFactory emf;
@@ -201,4 +201,24 @@ public class CheckGlossaryTester extends javax.swing.JPanel {
     private javax.swing.JLabel trnsStrLabel;
     private javax.swing.JTextArea trnsStrTextArea;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onTabPanelAdded() {
+        if (entityManager == null) {
+            entityManager = emf.createEntityManager();
+            entityManager.getTransaction().begin();
+        }
+
+        refreshL10nList();
+    }
+
+    @Override
+    public void onTabPanelRemoved() {
+        if (entityManager.getTransaction().isActive()) {
+            entityManager.flush();
+            entityManager.getTransaction().commit();
+        }
+        entityManager.close();
+        entityManager = null;
+    }
 }
