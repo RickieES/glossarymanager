@@ -125,8 +125,8 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
     private void refreshGlossaryList() {
         TypedQuery<Glossary> glosQuery = entityManager.createNamedQuery("Glossary.findAll",
                 Glossary.class);
-        glossaryListModel.clearAll();
-        glossaryListModel.addAll(glosQuery.getResultList());
+        glossaryComboModel.clearAll();
+        glossaryComboModel.addAll(glosQuery.getResultList());
     }
 
     private void refreshL10nList() {
@@ -189,8 +189,8 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         entityManager = emf.createEntityManager();
         glosEntryTableModel = new net.localizethat.gui.models.GlosEntryTableModel();
         glosTranslationTableModel = new net.localizethat.gui.models.GlosTranslationTableModel();
-        glossaryListModel = new net.localizethat.gui.models.GlossaryListModel();
         l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
+        glossaryComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<Glossary>();
         glossarySelectorPanel = new javax.swing.JPanel();
         glosSelLabel = new javax.swing.JLabel();
         glosSelCombo = new javax.swing.JComboBox<Glossary>();
@@ -246,6 +246,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         glosSelLabel.setLabelFor(glosSelCombo);
         glosSelLabel.setText("Glossary to work with:");
 
+        glosSelCombo.setModel(glossaryComboModel);
         glosSelCombo.addActionListener(formListener);
 
         localeSelLabel.setLabelFor(localeSelCombo);
@@ -890,7 +891,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
     private javax.swing.JLabel glosSelLabel;
     private net.localizethat.gui.models.GlosTranslationTableModel glosTranslationTableModel;
     private javax.swing.JPanel glosTrnsPanel;
-    private net.localizethat.gui.models.GlossaryListModel glossaryListModel;
+    private net.localizethat.gui.models.ListComboBoxGenericModel<Glossary> glossaryComboModel;
     private javax.swing.JPanel glossarySelectorPanel;
     private javax.swing.JLabel glseCommentLabel;
     private javax.swing.JTextArea glseCommentTextArea;
@@ -937,7 +938,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         public void componentShown(ComponentEvent e) {
             Component parentPanel = e.getComponent();
 
-            if ((glossaryListModel.getSize() < 1) || (l10nComboModel.getSize() < 2)) {
+            if ((glossaryComboModel.getSize() < 1) || (l10nComboModel.getSize() < 2)) {
                 JOptionPane.showMessageDialog(parentPanel,
                         "You need at least one glossary and two locales defined!",
                         "Not enough glossaries or locales", JOptionPane.ERROR_MESSAGE);

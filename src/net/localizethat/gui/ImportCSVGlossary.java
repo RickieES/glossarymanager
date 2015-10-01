@@ -11,6 +11,7 @@ import java.beans.Beans;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -94,8 +95,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
         TypedQuery<Glossary> glosQuery = entityManager.createNamedQuery("Glossary.findAll",
                 Glossary.class);
 
-        glosListModel.clearAll();
-        glosListModel.addAll(glosQuery.getResultList());
+        glosComboModel.clearAll();
+        glosComboModel.addAll(glosQuery.getResultList());
     }
 
     private void refreshL10nList() {
@@ -116,9 +117,17 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             testRunCheck.setSelected(cis.isTestMode());
 
             if (cis.getGlossary() != null) {
-                Glossary g = cis.getGlossary();
-                g = glosListModel.findById(g.getId());
-                importToGlossaryCombo.setSelectedItem(g);
+                Glossary selectedGlos = null;
+                Glossary savedGlos = cis.getGlossary();
+                for(Glossary g : glosComboModel.getAll()) {
+                    if (Objects.equals(g.getId(), savedGlos.getId())) {
+                        selectedGlos = g;
+                        break;
+                    }
+                }
+                if (selectedGlos != null) {
+                    importToGlossaryCombo.setSelectedItem(selectedGlos);
+                }
             }
 
             allQuotedCheck.setSelected(cis.isAllFieldsQuoted());
@@ -176,8 +185,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private void initComponents() {
 
         entityManager = emf.createEntityManager();
-        glosListModel = new net.localizethat.gui.models.GlossaryListModel();
         l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
+        glosComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<Glossary>();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         generalPanel = new javax.swing.JPanel();
         filenameLabel = new javax.swing.JLabel();
@@ -250,6 +259,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
         importToGlossaryLabel.setDisplayedMnemonic('I');
         importToGlossaryLabel.setLabelFor(importToGlossaryCombo);
         importToGlossaryLabel.setText("Import to glossary:");
+
+        importToGlossaryCombo.setModel(glosComboModel);
 
         tipImport.setText("Tip: to import in a new glossary, create it first");
 
@@ -705,7 +716,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             CSVImportSettings cis = new CSVImportSettings();
             cis.setFileToImport(filenamePathField.getSelectedFile())
                     .setTestMode(testRunCheck.isSelected())
-                    .setGlossary(glosListModel.getElementAt(importToGlossaryCombo.getSelectedIndex()))
+                    .setGlossary(glosComboModel.getElementAt(importToGlossaryCombo.getSelectedIndex()))
                     .setAllFieldsQuoted(allQuotedCheck.isSelected())
                     .setCharset((Charset) charsetCombo.getSelectedItem())
                     .setFieldDelimiter(fieldDelimField.getText().charAt(0))
@@ -768,7 +779,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private javax.swing.JLabel firstLineToImportLabel;
     private javax.swing.JCheckBox firstRowHeadersCheck;
     private javax.swing.JPanel generalPanel;
-    private net.localizethat.gui.models.GlossaryListModel glosListModel;
+    private net.localizethat.gui.models.ListComboBoxGenericModel<Glossary> glosComboModel;
     private javax.swing.JPanel importDetailsPanel;
     private javax.swing.JComboBox<Glossary> importToGlossaryCombo;
     private javax.swing.JLabel importToGlossaryLabel;

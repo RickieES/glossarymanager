@@ -10,11 +10,14 @@
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="emf.createEntityManager()"/>
       </AuxValues>
     </Component>
-    <Component class="net.localizethat.gui.models.GlossaryListModel" name="glosListModel">
-    </Component>
     <Component class="net.localizethat.gui.models.ListComboBoxGenericModel" name="l10nComboModel">
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;L10n&gt;"/>
+      </AuxValues>
+    </Component>
+    <Component class="net.localizethat.gui.models.ListComboBoxGenericModel" name="glosComboModel">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Glossary&gt;"/>
       </AuxValues>
     </Component>
   </NonVisualComponents>
@@ -163,6 +166,11 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JComboBox" name="importToGlossaryCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection component="glosComboModel" type="bean"/>
+                </Property>
+              </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Glossary&gt;"/>
               </AuxValues>
