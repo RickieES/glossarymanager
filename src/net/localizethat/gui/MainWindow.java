@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import net.localizethat.Main;
+import net.localizethat.gui.tabpanels.AbstractTabPanel;
 import net.localizethat.util.gui.JStatusBar;
 
 /**
@@ -49,8 +50,15 @@ public class MainWindow extends javax.swing.JFrame {
         addClosableTab(tabPanel, content, title, null);
     }
 
-    public void addTab(JPanel content, String title) {
+    public void addTab(AbstractTabPanel content, String title) {
+        content.onTabPanelAdded();
         addClosableTab(tabPanel, content, title, null);
+    }
+
+    public void removeTab(AbstractTabPanel content) {
+        tabPanel.remove(content);
+        content.setVisible(false);
+        content.onTabPanelRemoved();
     }
 
     /**
