@@ -32,7 +32,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
+ * An object representing a glossary, ie., a named collection of terms in a given language,
+ * each of one has one or more approved translations
  * @author rpalomares
  */
 @Entity

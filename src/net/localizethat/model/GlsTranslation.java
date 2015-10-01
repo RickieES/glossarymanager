@@ -27,7 +27,8 @@ import javax.persistence.Version;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- *
+ * An approved translation in one language for a glossary entry, with the GlsTranslation
+ * language being different from the Glossary original language
  * @author rpalomares
  */
 @Entity

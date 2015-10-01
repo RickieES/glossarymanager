@@ -34,7 +34,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- *
+ * A glossary entry, ie., a term belonging to one Glossary, written in the same language
+ * than it. A GlsEntry can have one or more approved translations (GlsTranslation), each
+ * one in a language other than the glossary original language. A GlsEntry can have zero
+ * or more GlsTranslation items for a given target language.
  * @author rpalomares
  */
 @Entity
