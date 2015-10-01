@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package net.localizethat.gui;
+package net.localizethat.gui.tabpanels;
 
 import java.awt.Component;
 import java.awt.event.ComponentAdapter;
@@ -170,7 +170,8 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         RowFilter<TableModel, Object> rf;
         //If current expression doesn't parse, don't update.
         try {
-            rf = RowFilter.regexFilter(filter, 0);
+            // (?i) adds case insensitive flag to the RegEx
+            rf = RowFilter.regexFilter("(?i)" + filter, 0);
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
@@ -306,6 +307,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
 
         glseFilterField.setToolTipText("Enter text to filter entries");
 
+        glseTable.setModel(glosEntryTableModel);
         glseTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(glseTable);
 
@@ -449,6 +451,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
 
         glstFilterField.setToolTipText("Enter text to filter entries");
 
+        glstTable.setModel(glosTranslationTableModel);
         glstTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane3.setViewportView(glstTable);
 
