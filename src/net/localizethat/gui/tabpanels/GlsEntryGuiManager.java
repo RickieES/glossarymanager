@@ -5,9 +5,6 @@
  */
 package net.localizethat.gui.tabpanels;
 
-import java.awt.Component;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.beans.Beans;
 import java.util.Date;
 import java.util.logging.Level;
@@ -37,7 +34,7 @@ import net.localizethat.util.gui.JStatusBar;
  * Glossary entries and translations management GUI
  * @author rpalomares
  */
-public class GlsEntryGuiManager extends javax.swing.JPanel {
+public class GlsEntryGuiManager extends AbstractTabPanel {
     private static final long serialVersionUID = 1L;
     EntityManagerFactory emf;
     TableRowSorter<GlosEntryTableModel> entriesRowSorter;
@@ -62,7 +59,6 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
             glsePoSCombo.addItem(pos);
         }
 
-        // TODO Investigate why the sorter doesn't work right
         entriesRowSorter = new TableRowSorter<>(glosEntryTableModel);
         glseTable.setRowSorter(entriesRowSorter);
         glseFilterField.getDocument().addDocumentListener(
@@ -76,7 +72,6 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
 
         glseTable.getSelectionModel().addListSelectionListener(new GlsEntryTableRowListener());
         glstTable.getSelectionModel().addListSelectionListener(new GlsTranslationTableRowListener());
-        addComponentListener(new GlsEntryPanelListener());
     }
 
     private void enableEntriesPanelControls(boolean activate) {
@@ -241,8 +236,6 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         deleteGlstButton = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
-
-        addComponentListener(formListener);
 
         glosSelLabel.setLabelFor(glosSelCombo);
         glosSelLabel.setText("Glossary to work with:");
@@ -613,7 +606,7 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
 
     // Code for dispatching events from components to event handlers.
 
-    private class FormListener implements java.awt.event.ActionListener, java.awt.event.ComponentListener {
+    private class FormListener implements java.awt.event.ActionListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == glosSelCombo) {
@@ -639,24 +632,6 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
             }
             else if (evt.getSource() == deleteGlstButton) {
                 GlsEntryGuiManager.this.deleteGlstButtonActionPerformed(evt);
-            }
-        }
-
-        public void componentHidden(java.awt.event.ComponentEvent evt) {
-            if (evt.getSource() == GlsEntryGuiManager.this) {
-                GlsEntryGuiManager.this.formComponentHidden(evt);
-            }
-        }
-
-        public void componentMoved(java.awt.event.ComponentEvent evt) {
-        }
-
-        public void componentResized(java.awt.event.ComponentEvent evt) {
-        }
-
-        public void componentShown(java.awt.event.ComponentEvent evt) {
-            if (evt.getSource() == GlsEntryGuiManager.this) {
-                GlsEntryGuiManager.this.formComponentShown(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -851,36 +826,6 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_deleteGlstButtonActionPerformed
 
-    private void formComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-        entityManager.getTransaction().rollback();
-        entityManager.close();
-        entityManager = null;
-        glosMainLangField.setText("");
-        glosSelCombo.setSelectedIndex(-1);
-        localeSelCombo.setSelectedIndex(-1);
-        glseFilterField.setText("");
-        glstFilterField.setText("");
-        clearEntryDetailFields();
-        clearTranslationDetailFields();
-        enableEntriesPanelControls(false);
-        enableTranslationsPanelControls(false);
-    }//GEN-LAST:event_formComponentHidden
-
-    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-        if (entityManager == null) {
-            entityManager = emf.createEntityManager();
-        }
-        if (!Beans.isDesignTime()) {
-            entityManager.getTransaction().begin();
-        }
-        refreshGlossaryList();
-        refreshL10nList();
-        refreshGlsEntryList();
-        refreshGlsTranslationList();
-        enableEntriesPanelControls(false);
-        enableTranslationsPanelControls(false);
-    }//GEN-LAST:event_formComponentShown
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deleteGlseButton;
     private javax.swing.JButton deleteGlstButton;
@@ -936,18 +881,41 @@ public class GlsEntryGuiManager extends javax.swing.JPanel {
     private javax.swing.JButton saveGlstButton;
     // End of variables declaration//GEN-END:variables
 
-    private class GlsEntryPanelListener extends ComponentAdapter {
-        @Override
-        public void componentShown(ComponentEvent e) {
-            Component parentPanel = e.getComponent();
-
-            if ((glossaryComboModel.getSize() < 1) || (l10nComboModel.getSize() < 2)) {
-                JOptionPane.showMessageDialog(parentPanel,
-                        "You need at least one glossary and two locales defined!",
-                        "Not enough glossaries or locales", JOptionPane.ERROR_MESSAGE);
-                parentPanel.setVisible(false);
-            }
+    @Override
+    public void onTabPanelAdded() {
+        if (entityManager == null) {
+            entityManager = emf.createEntityManager();
+            entityManager.getTransaction().begin();
         }
+        refreshGlossaryList();
+        refreshL10nList();
+        refreshGlsEntryList();
+        refreshGlsTranslationList();
+        if ((glossaryComboModel.getSize() < 1) || (l10nComboModel.getSize() < 2)) {
+            JOptionPane.showMessageDialog(this,
+                    "You need at least one glossary and two locales defined!",
+                    "Not enough glossaries or locales", JOptionPane.ERROR_MESSAGE);
+        }
+        enableEntriesPanelControls(false);
+        enableTranslationsPanelControls(false);
+    }
+
+    @Override
+    public void onTabPanelRemoved() {
+        glosMainLangField.setText("");
+        glosSelCombo.setSelectedIndex(-1);
+        localeSelCombo.setSelectedIndex(-1);
+        glseFilterField.setText("");
+        glstFilterField.setText("");
+        clearEntryDetailFields();
+        clearTranslationDetailFields();
+        enableEntriesPanelControls(false);
+        enableTranslationsPanelControls(false);
+        if (entityManager.getTransaction().isActive()) {
+            entityManager.getTransaction().rollback();
+        }
+        entityManager.close();
+        entityManager = null;
     }
 
     private class GlsEntryTableRowListener implements ListSelectionListener {
