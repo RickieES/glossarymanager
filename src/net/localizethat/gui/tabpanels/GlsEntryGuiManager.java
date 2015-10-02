@@ -7,6 +7,8 @@ package net.localizethat.gui.tabpanels;
 
 import java.beans.Beans;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
@@ -172,6 +174,86 @@ public class GlsEntryGuiManager extends AbstractTabPanel {
         }
         trs.setRowFilter(rf);
 
+    }
+
+    private boolean validateOnGlsEntrySave(GlsEntry selectedGe) {
+        // Validation 1: the term must not be empty
+        if (glseTermField.getText().trim().isEmpty()) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: glossary entry term can't be empty",
+                    "The glossary entry must not be an empty term");
+            return false;
+        }
+
+        // Validation 2: the glossary term can't exist already in the database
+        // for the same glossary, except in the same item
+        TypedQuery<GlsEntry> validationQuery = entityManager.createNamedQuery(
+                "GlsEntry.findByGlsAndTermAndPoS", GlsEntry.class);
+        validationQuery.setParameter("glosid", (Glossary) glosSelCombo.getSelectedItem());
+        validationQuery.setParameter("glseterm", glseTermField.getText());
+        validationQuery.setParameter("partofspeech", (PartOfSpeech) glsePoSCombo.getSelectedItem());
+        List<GlsEntry> listGlsEntries = validationQuery.getResultList();
+        int listLength = listGlsEntries.size();
+        boolean isOk;
+        if (listLength == 0) {
+            isOk = true;
+        } else if (listLength == 1) {
+            GlsEntry glseInDB = listGlsEntries.get(0);
+            isOk = (Objects.equals(glseInDB.getId(), selectedGe.getId()));
+        } else {
+            // This should never be reached, since we don't allow more than one glossary entry
+            // with the same parent glossary, term and part of speech, but it is checked just
+            // as defensive programming
+            isOk = false;
+        }
+        if (!isOk) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: glossary entry already exists",
+                    "There is already one entry in the database for the selected glossary "
+                    + "with the same term and part of speech values");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateOnGlsTranslationSave(GlsTranslation selectedGt) {
+        // Validation 1: the translation must not be empty
+        if (this.glstValueField.getText().trim().isEmpty()) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: glossary translation value can't be empty",
+                    "The glossary translation must not be an empty one");
+            return false;
+        }
+
+        // Validation 2: the glossary translation can't exist already in the database
+        // for the same glossary, term and locale, except in the same item
+        TypedQuery<GlsTranslation> validationQuery = entityManager.createNamedQuery(
+                "GlsTranslation.findByEntryAndLocaleAndValue", GlsTranslation.class);
+        validationQuery.setParameter("glseid", selectedGt.getGlseId());
+        validationQuery.setParameter("l10nid", (L10n) localeSelCombo.getSelectedItem());
+        validationQuery.setParameter("value", glstValueField.getText());
+        List<GlsTranslation> listGlsTranslations = validationQuery.getResultList();
+        int listLength = listGlsTranslations.size();
+        boolean isOk;
+        if (listLength == 0) {
+            isOk = true;
+        } else if (listLength == 1) {
+            GlsTranslation glstInDB = listGlsTranslations.get(0);
+            isOk = (Objects.equals(glstInDB.getId(), selectedGt.getId()));
+        } else {
+            // This should never be reached, since we don't allow more than one glossary
+            // translation with the same parent glossary entry, locale and value, but it
+            // is checked just as defensive programming
+            isOk = false;
+        }
+        if (!isOk) {
+            statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
+                    "Error while saving: glossary translation already exists",
+                    "There is already one entry in the database for the selected glossary "
+                    + "entry with the same locale and translation values");
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -652,7 +734,15 @@ public class GlsEntryGuiManager extends AbstractTabPanel {
                     "New entry added, use detail fields to complete it");
             glosEntryTableModel.addElement(ge);
             int index = glosEntryTableModel.getIndexOf(ge);
-            glosEntryTableModel.fireTableRowsInserted(index, index);
+
+            // The below line triggers a java.lang.ArrayIndexOutOfBoundsException,
+            // despite the number of lines in both the model and the view being equal
+            // glosEntryTableModel.fireTableRowsInserted(index, index);
+            // See: http://stackoverflow.com/questions/26020724/java-firetablerowsinsertedint-int-with-rowsorter
+            //
+            // So I workaround with this less efficient method
+            glosEntryTableModel.fireTableDataChanged();
+
             glseTable.changeSelection(glseTable.convertRowIndexToView(index), 0, false, false);
             glseTermField.requestFocus();
         } catch (Exception ex) {
@@ -691,8 +781,12 @@ public class GlsEntryGuiManager extends AbstractTabPanel {
 
     private void saveGlseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveGlseButtonActionPerformed
         int index = glseTable.convertRowIndexToModel(glseTable.getSelectedRow());
-
         GlsEntry ge = glosEntryTableModel.getElement(index);
+        // validateOnSave will report the specific problem in the status bar
+        if (!validateOnGlsEntrySave(ge)) {
+            return;
+        }
+
         ge.setTerm(glseTermField.getText());
         ge.setPartOfSpeech((PartOfSpeech) glsePoSCombo.getSelectedItem());
         ge.setComment(glseCommentTextArea.getText());
@@ -744,8 +838,13 @@ public class GlsEntryGuiManager extends AbstractTabPanel {
 
     private void saveGlstButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveGlstButtonActionPerformed
         int index = glstTable.convertRowIndexToModel(glstTable.getSelectedRow());
-
         GlsTranslation gt = glosTranslationTableModel.getElement(index);
+
+        // validateOnSave will report the specific problem in the status bar
+        if (!validateOnGlsTranslationSave(gt)) {
+            return;
+        }
+
         entityManager.refresh(gt);
         gt.setValue(glstValueField.getText());
         gt.setComment(glstCommentTextArea.getText());
