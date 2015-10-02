@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import net.localizethat.Main;
-import net.localizethat.gui.OnExistingTermAction;
+import net.localizethat.gui.dialogs.OnExistingTermAction;
 import net.localizethat.model.Glossary;
 import net.localizethat.model.GlsEntry;
 import net.localizethat.model.GlsTranslation;

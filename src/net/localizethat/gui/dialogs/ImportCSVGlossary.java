@@ -22,7 +22,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.localizethat.Main;
-import net.localizethat.gui.OnExistingTermAction;
 import net.localizethat.gui.models.CharsetModel;
 import net.localizethat.model.Glossary;
 import net.localizethat.model.L10n;
