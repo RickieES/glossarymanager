@@ -228,7 +228,7 @@ public class CheckGlossaryWorker
         lastStringPos += (stringPos - lastStringPos);
 
         finish = System.currentTimeMillis();
-        Logger.getLogger(CSVImporterWorker.class.getName()).log(Level.INFO,
+        Logger.getLogger(CheckGlossaryWorker.class.getName()).log(Level.INFO,
                 "Check glossary exec time: {0} ms", (finish - start));
         return failedEntriesList;
     }
