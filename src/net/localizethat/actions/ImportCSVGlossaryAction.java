@@ -9,7 +9,7 @@ package net.localizethat.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import net.localizethat.Main;
-import net.localizethat.gui.ImportCSVGlossary;
+import net.localizethat.gui.dialogs.ImportCSVGlossary;
 import net.localizethat.util.gui.ModalDialog;
 
 /**

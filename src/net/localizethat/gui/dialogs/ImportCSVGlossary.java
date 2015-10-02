@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package net.localizethat.gui;
+package net.localizethat.gui.dialogs;
 
 import au.com.bytecode.opencsv.CSV;
 import java.beans.Beans;
@@ -22,6 +22,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.localizethat.Main;
+import net.localizethat.gui.OnExistingTermAction;
 import net.localizethat.gui.models.CharsetModel;
 import net.localizethat.model.Glossary;
 import net.localizethat.model.L10n;
@@ -86,9 +87,9 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
         refreshL10nList();
         retrieveSavedCSVImportSettings();
         // On start, only the first tab is enabled
-        jTabbedPane1.setEnabledAt(0, true);
-        jTabbedPane1.setEnabledAt(1, false);
-        jTabbedPane1.setEnabledAt(2, false);
+        tabbedPane.setEnabledAt(0, true);
+        tabbedPane.setEnabledAt(1, false);
+        tabbedPane.setEnabledAt(2, false);
     }
 
     private void refreshGlossaryList() {
@@ -187,7 +188,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
         entityManager = emf.createEntityManager();
         l10nComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<L10n>();
         glosComboModel = new net.localizethat.gui.models.ListComboBoxGenericModel<Glossary>();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        tabbedPane = new javax.swing.JTabbedPane();
         generalPanel = new javax.swing.JPanel();
         filenameLabel = new javax.swing.JLabel();
         filenamePathField = new net.localizethat.util.gui.JPathField();
@@ -317,7 +318,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
                 .addContainerGap(183, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("General values", generalPanel);
+        tabbedPane.addTab("General values", generalPanel);
 
         fileFormatPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         fileFormatPanel.setEnabled(false);
@@ -420,7 +421,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
                 .addContainerGap(75, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("CSV format details", fileFormatPanel);
+        tabbedPane.addTab("CSV format details", fileFormatPanel);
 
         importDetailsPanel.setEnabled(false);
 
@@ -612,7 +613,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Import Details", importDetailsPanel);
+        tabbedPane.addTab("Import Details", importDetailsPanel);
 
         okButton.setText("Next");
         okButton.setMaximumSize(new java.awt.Dimension(81, 25));
@@ -632,7 +633,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
+                    .addComponent(tabbedPane)
                     .addComponent(buttonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -640,7 +641,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addComponent(tabbedPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(buttonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -679,7 +680,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         // If the currently selected tab is the first one,
-        if (jTabbedPane1.getSelectedIndex() == 0) {
+        if (tabbedPane.getSelectedIndex() == 0) {
             // Launch the file reader worker, enable the second tab and activate it
             FileHeadReaderWorker fhrw = new FileHeadReaderWorker(filenamePathField.getSelectedFile(),
                     sampleFileContentTextArea);
@@ -687,15 +688,15 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
                     ofFileLinesLabel);
             fhrw.execute();
             flcw.execute();
-            jTabbedPane1.setEnabledAt(1, true);
-            jTabbedPane1.setSelectedIndex(1);
+            tabbedPane.setEnabledAt(1, true);
+            tabbedPane.setSelectedIndex(1);
             try {
                 fileLines = flcw.get(2, TimeUnit.SECONDS);
                 ((SpinnerNumberModel) firstLineToImportField.getModel()).setMaximum(fileLines);
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 fileLines = -1;
             }
-        } else if (jTabbedPane1.getSelectedIndex() == 1) {
+        } else if (tabbedPane.getSelectedIndex() == 1) {
             CSV csvSettings = CSV
                     .separator(fieldDelimField.getText().charAt(0))
                     .quote(textDelimField.getText().charAt(0))
@@ -705,8 +706,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             CSVHeaderReaderWorker crw = new CSVHeaderReaderWorker(filenamePathField.getSelectedFile(),
                     csvSettings, headerModelList, firstRowHeadersCheck.isSelected(), this);
             okButton.setText("OK");
-            jTabbedPane1.setEnabledAt(2, true);
-            jTabbedPane1.setSelectedIndex(2);
+            tabbedPane.setEnabledAt(2, true);
+            tabbedPane.setSelectedIndex(2);
 
             if (multipleValuesInTrnsCheck.isSelected()) {
                 multValueSeparatorField.setEnabled(true);
@@ -744,8 +745,8 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
             ciw.addPropertyChangeListener(pbl);
 
             okButton.setText("OK");
-            jTabbedPane1.setEnabledAt(2, true);
-            jTabbedPane1.setSelectedIndex(2);
+            tabbedPane.setEnabledAt(2, true);
+            tabbedPane.setSelectedIndex(2);
             ciw.execute();
             md.setModalDialogResult(true);
         }
@@ -786,7 +787,6 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private net.localizethat.gui.models.ListComboBoxGenericModel<L10n> l10nComboModel;
     private javax.swing.JTextField multValueSeparatorField;
     private javax.swing.JCheckBox multipleValuesInTrnsCheck;
@@ -805,6 +805,7 @@ public class ImportCSVGlossary extends javax.swing.JPanel implements ModalDialog
     private javax.swing.JComboBox<String> origTermPoSCombo;
     private javax.swing.JLabel origTermPoSLabel;
     private javax.swing.JTextArea sampleFileContentTextArea;
+    private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JCheckBox testRunCheck;
     private javax.swing.JLabel testTipLabel;
     private javax.swing.JTextField textDelimField;

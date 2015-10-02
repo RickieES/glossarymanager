@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingWorker;
-import net.localizethat.gui.ImportCSVGlossary;
+import net.localizethat.gui.dialogs.ImportCSVGlossary;
 
 /**
  * SwingWorker task that reads the CSV file to grab the first line to import as headers
