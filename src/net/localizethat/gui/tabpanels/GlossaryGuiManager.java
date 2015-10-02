@@ -84,7 +84,7 @@ public class GlossaryGuiManager extends AbstractTabPanel {
         if (glosNameField.getText().trim().isEmpty()) {
             statusBar.logMessage(JStatusBar.LogMsgType.ERROR,
                     "Error while saving: Glossary name can't be empty",
-                    "The glosasry name must not be empty");
+                    "The glossary name must not be empty");
             return false;
         }
 
@@ -102,7 +102,7 @@ public class GlossaryGuiManager extends AbstractTabPanel {
             Glossary glosInDB = listGlossary.get(0);
             isOk = (Objects.equals(glosInDB.getId(), selectedGlossary.getId()));
         } else {
-            // This should never be reached, since we don't allow more than one product
+            // This should never be reached, since we don't allow more than one glossary
             // with the same name, but it is checked just as defensive programming
             isOk = false;
         }
