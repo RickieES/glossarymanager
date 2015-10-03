@@ -9,6 +9,7 @@ package net.localizethat.tasks;
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -418,7 +419,11 @@ public class CSVImporterWorker extends SwingWorker<List<String>, Void> {
                 CSVImportSettings cis = (CSVImportSettings) u.unmarshal(f);
                 return cis;
             } catch (JAXBException e) {
-                Logger.getLogger(CSVImportSettings.class.getName()).log(Level.SEVERE, null, e);
+                if (e.getLinkedException() instanceof FileNotFoundException) {
+                    Main.mainWindow.getStatusBar().setWarnText("Saved preferences file not found");
+                } else {
+                    Logger.getLogger(CSVImportSettings.class.getName()).log(Level.SEVERE, null, e);
+                }
                 return null;
             }
         }
