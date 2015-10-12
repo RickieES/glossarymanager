@@ -12,16 +12,13 @@ import net.localizethat.Main;
 import net.localizethat.gui.listeners.CheckGlossaryTranslatedTextListener;
 import net.localizethat.model.Glossary;
 import net.localizethat.model.L10n;
-import net.localizethat.tasks.CheckGlossaryWorker;
-import net.localizethat.util.gui.JStatusBar;
 
 /**
- *
+ * Sample form to test original/translation pairs against a glossary
  * @author rpalomares
  */
 public class CheckGlossaryTester extends AbstractTabPanel {
     private static final long serialVersionUID = 1L;
-    private final JStatusBar statusBar;
     private final EntityManagerFactory emf;
     private final Glossary g;
     private final CheckGlossaryTranslatedTextListener cgttl;
@@ -30,7 +27,6 @@ public class CheckGlossaryTester extends AbstractTabPanel {
      * Creates new form CheckGlossaryTester
      */
     public CheckGlossaryTester() {
-        statusBar = Main.mainWindow.getStatusBar();
         emf = Main.emf;
         // The following code is executed inside initComponents()
         // entityManager = emf.createEntityManager();
@@ -44,7 +40,7 @@ public class CheckGlossaryTester extends AbstractTabPanel {
         g = entityManager.find(Glossary.class, 1);
         cgttl = new CheckGlossaryTranslatedTextListener(origStrTextPane.getText(),
                 this.trnsStrTextArea, (L10n) this.localeCombo.getSelectedItem(),
-                entityManager, origStrTextPane, resultsPanel, g);
+                entityManager, origStrTextPane, g);
         trnsStrTextArea.getDocument().addDocumentListener(cgttl);
     }
 
@@ -73,7 +69,6 @@ public class CheckGlossaryTester extends AbstractTabPanel {
         trnsStrTextArea = new javax.swing.JTextArea();
         localeLabel = new javax.swing.JLabel();
         localeCombo = new javax.swing.JComboBox<L10n>();
-        resultsPanel = new javax.swing.JPanel();
         testButton = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
@@ -96,10 +91,6 @@ public class CheckGlossaryTester extends AbstractTabPanel {
         localeCombo.setModel(l10nComboModel);
         localeCombo.addFocusListener(formListener);
 
-        resultsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        resultsPanel.setToolTipText("Failed checks appear here");
-        resultsPanel.setMinimumSize(new java.awt.Dimension(14, 101));
-
         testButton.setText("Test");
         testButton.addActionListener(formListener);
 
@@ -110,18 +101,17 @@ public class CheckGlossaryTester extends AbstractTabPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(testButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(trnsStrLabel)
+                    .addComponent(localeLabel)
+                    .addComponent(origStrLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(trnsStrLabel)
-                            .addComponent(localeLabel)
-                            .addComponent(origStrLabel))
-                        .addGap(3, 3, 3)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
-                            .addComponent(localeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1))))
+                        .addGap(12, 12, 12)
+                        .addComponent(testButton)))
+                .addGap(3, 3, 3)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
+                    .addComponent(localeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -129,7 +119,10 @@ public class CheckGlossaryTester extends AbstractTabPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(origStrLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(origStrLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(testButton))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -139,10 +132,6 @@ public class CheckGlossaryTester extends AbstractTabPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(localeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(localeLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(testButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }
@@ -168,24 +157,12 @@ public class CheckGlossaryTester extends AbstractTabPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-        cleanResultsPanel();
-        CheckGlossaryWorker cgw = new CheckGlossaryWorker(origStrTextPane.getText(),
-                trnsStrTextArea.getText(), (L10n) localeCombo.getSelectedItem(),
-                entityManager, origStrTextPane, resultsPanel, g);
-        cgw.execute();
+        cgttl.setOriginal(origStrTextPane.getText());
     }//GEN-LAST:event_testButtonActionPerformed
 
     private void localeComboFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_localeComboFocusLost
         cgttl.setLocale(localeCombo.getItemAt(localeCombo.getSelectedIndex()));
     }//GEN-LAST:event_localeComboFocusLost
-
-    private void cleanResultsPanel() {
-        while (resultsPanel.getComponents().length > 0) {
-            resultsPanel.remove(0);
-        }
-        resultsPanel.validate();
-        resultsPanel.repaint();
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.persistence.EntityManager entityManager;
@@ -196,7 +173,6 @@ public class CheckGlossaryTester extends AbstractTabPanel {
     private javax.swing.JLabel localeLabel;
     private javax.swing.JLabel origStrLabel;
     private javax.swing.JTextPane origStrTextPane;
-    private javax.swing.JPanel resultsPanel;
     private javax.swing.JButton testButton;
     private javax.swing.JLabel trnsStrLabel;
     private javax.swing.JTextArea trnsStrTextArea;
@@ -208,8 +184,8 @@ public class CheckGlossaryTester extends AbstractTabPanel {
             entityManager = emf.createEntityManager();
             entityManager.getTransaction().begin();
         }
-
         refreshL10nList();
+        cgttl.setEntityManager(entityManager);
     }
 
     @Override

@@ -7,7 +7,6 @@
 package net.localizethat.gui.listeners;
 
 import javax.persistence.EntityManager;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
@@ -21,45 +20,49 @@ public class CheckGlossaryTranslatedTextListener extends AbstractSimpleDocumentL
     private String original;
     private final JTextArea translatedTextArea;
     private L10n locale;
-    private final EntityManager em;
+    private EntityManager em;
     private final JTextPane origStrPane;
-    private final JPanel resultsPanel;
     Glossary[] glsList;
 
     public CheckGlossaryTranslatedTextListener(String original, JTextArea translatedTextArea,
-            L10n locale, EntityManager em, JTextPane origStrPane, JPanel resultsPanel, Glossary... glsList) {
+            L10n locale, EntityManager em, JTextPane origStrPane, Glossary... glsList) {
         this.original = original;
         this.translatedTextArea = translatedTextArea;
         this.locale = locale;
         this.em = em;
         this.origStrPane = origStrPane;
-        this.resultsPanel = resultsPanel;
         this.glsList = glsList;
     }
 
     public void setOriginal(String original) {
         this.original = original;
+        cancelTask();
+        doTask(null);
     }
 
     public void setLocale(L10n locale) {
         this.locale = locale;
+        cancelTask();
+        doTask(null);
+    }
+
+    public void setEntityManager(EntityManager em) {
+        this.em = em;
+    }
+
+    private void cancelTask() {
+        if ((cgw != null) && (!cgw.isDone())) {
+            cgw.cancel(true);
+            cgw = null;
+        }
     }
 
     @Override
     protected void doTask(DocumentEvent e) {
         if ((cgw == null) || (cgw.isDone())) {
-            cleanResultsPanel();
             cgw = new CheckGlossaryWorker(original, translatedTextArea.getText(),
-                    locale, em, origStrPane, resultsPanel, glsList);
+                    locale, em, origStrPane, glsList);
             cgw.execute();
         }
-    }
-
-    private void cleanResultsPanel() {
-        while (resultsPanel.getComponents().length > 0) {
-            resultsPanel.remove(0);
-        }
-        resultsPanel.validate();
-        resultsPanel.repaint();
     }
 }
